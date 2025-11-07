@@ -8,6 +8,9 @@ let flowers = [];
 
 let recordButton;
 
+// Tap guard to prevent double firing on iPad
+let ignoreNextTap = false;
+
 function preload() {
   micImg = loadImage("assets/mic.png");
   bgImg = loadImage("assets/background.png");
@@ -20,10 +23,27 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
+  // Create record button
   recordButton = createButton("Start Recording");
   recordButton.position(width / 2 - 70, height - 100);
   recordButton.style("font-size", "20px");
-  recordButton.mousePressed(() => setTimeout(startStopRecording, 50));
+
+  // Desktop click
+  recordButton.mousePressed(() => {
+    if (ignoreNextTap) return;
+    ignoreNextTap = true;
+    setTimeout(() => (ignoreNextTap = false), 300);
+    startStopRecording();
+  });
+
+  // iPad touch
+  recordButton.touchEnded(() => {
+    if (ignoreNextTap) return;
+    ignoreNextTap = true;
+    setTimeout(() => (ignoreNextTap = false), 300);
+    startStopRecording();
+    return false; // prevent simulated click
+  });
 }
 
 function draw() {
@@ -40,7 +60,8 @@ function draw() {
   }
 
   micScale = recording ? lerp(micScale, 1.5, 0.1) : lerp(micScale, 1, 0.1);
-  if (micImg) image(micImg, width / 2, height / 2 + 150, micImg.width * micScale, micImg.height * micScale);
+  if (micImg)
+    image(micImg, width / 2, height / 2 + 150, micImg.width * micScale, micImg.height * micScale);
 
   fill(255);
   textSize(24);
@@ -54,7 +75,7 @@ async function startStopRecording() {
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
 
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
       mediaRecorder.onstop = () => {
         const blob = new Blob(audioChunks, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
