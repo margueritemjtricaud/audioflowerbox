@@ -61,7 +61,7 @@ function draw() {
 
   micScale = recording ? lerp(micScale, 1.5, 0.1) : lerp(micScale, 1, 0.1);
   if (micImg)
-    image(micImg, width / 2, height / 2 + 150, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, width / 3, height / 2 + 150, micImg.width * micScale, micImg.height * micScale);
 
   fill(255);
   textSize(24);
@@ -110,3 +110,4 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - 70, height - 100);
 }
+
