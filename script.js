@@ -2,13 +2,11 @@ let recording = false;
 let audioChunks = [];
 let mediaRecorder;
 
-let micImg;
+let micImg, bgImg, flowerImg;
 let micScale = 1;
-let bgImg;
-let flowerImg;
-
-// Array to store all flowers
 let flowers = [];
+
+let recordButton;
 
 function preload() {
   micImg = loadImage("assets/mic.png");
@@ -17,37 +15,36 @@ function preload() {
 }
 
 function setup() {
-  const cnv = createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
-  textSize(24);
+  rectMode(CENTER);
+  imageMode(CENTER);
 
-  cnv.mousePressed(startStopRecording);
-  cnv.touchStarted(startStopRecording);
+  recordButton = createButton("Start Recording");
+  recordButton.position(width / 2 - 70, height - 100);
+  recordButton.style("font-size", "20px");
+  recordButton.mousePressed(() => setTimeout(startStopRecording, 50));
 }
 
 function draw() {
-  clear();
-  background(recording ? lerpColor(color(30,40,60), color(200,50,50), 0.05)
-                     : color(30,40,60));
+  background(30);
 
-  if (bgImg) {
-    imageMode(CENTER);
-    image(bgImg, width/2, height/2, width, height);
-  }
+  if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-  // Draw all flowers
-  imageMode(CENTER);
   for (let f of flowers) {
-    image(flowerImg, f.x, f.y, f.size, f.size);
+    if (flowerImg) image(flowerImg, f.x, f.y, f.size, f.size);
+    else {
+      fill(0, 255, 0);
+      ellipse(f.x, f.y, f.size);
+    }
   }
-
-  fill(255);
-  //textAlign(CENTER, CENTER);
-  //textSize(24);
-  //text(recording ? "Recording..." : "Tap the mic to record", width/2, height/2);
 
   micScale = recording ? lerp(micScale, 1.5, 0.1) : lerp(micScale, 1, 0.1);
-  image(micImg, width/2, height/2 + 100, micImg.width * micScale, micImg.height * micScale);
+  if (micImg) image(micImg, width / 2, height / 2 + 150, micImg.width * micScale, micImg.height * micScale);
+
+  fill(255);
+  textSize(24);
+  text(recording ? "Recording..." : "Tap button to record", width / 2, height / 2);
 }
 
 async function startStopRecording() {
@@ -59,16 +56,17 @@ async function startStopRecording() {
 
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'myRecording.webm';
+        a.download = "myRecording.webm";
         a.click();
       };
 
       mediaRecorder.start();
       recording = true;
+      recordButton.html("Stop Recording");
     } catch (err) {
       console.error("Microphone access denied or failed:", err);
     }
@@ -76,14 +74,18 @@ async function startStopRecording() {
     mediaRecorder.stop();
     recording = false;
     plantFlower();
+    recordButton.html("Start Recording");
   }
-
-  return false;
 }
 
 function plantFlower() {
-  let size = random(50, 150); // random flower size
-  let x = random(size/2, width - size/2);
-  let y = random(size/2, height - size/2);
+  let size = random(50, 150);
+  let x = random(size / 2, width - size / 2);
+  let y = random(size / 2, height - size / 2);
   flowers.push({ x, y, size });
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  recordButton.position(width / 2 - 70, height - 100);
 }
