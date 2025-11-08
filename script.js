@@ -5,10 +5,9 @@ let mediaRecorder;
 let micImg, bgImg, flowerImg;
 let micScale = 1;
 let flowers = [];
-
 let recordButton;
 
-// Tap guard to prevent double firing on iPad
+// Prevent double tap on iPad
 let ignoreNextTap = false;
 
 function preload() {
@@ -23,27 +22,12 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
-  // Create record button
   recordButton = createButton("Start Recording");
   recordButton.position(width / 2 - 70, height - 100);
   recordButton.style("font-size", "20px");
 
-  // Desktop click
-  recordButton.mousePressed(() => {
-    if (ignoreNextTap) return;
-    ignoreNextTap = true;
-    setTimeout(() => (ignoreNextTap = false), 300);
-    startStopRecording();
-  });
-
-  // iPad touch
-  recordButton.touchEnded(() => {
-    if (ignoreNextTap) return;
-    ignoreNextTap = true;
-    setTimeout(() => (ignoreNextTap = false), 300);
-    startStopRecording();
-    return false; // prevent simulated click
-  });
+  recordButton.mousePressed(handleRecord);
+  recordButton.touchEnded(handleRecord);
 }
 
 function draw() {
@@ -68,6 +52,13 @@ function draw() {
   text(recording ? "Recording..." : "Tap button to record", width / 2, height / 2);
 }
 
+function handleRecord() {
+  if (ignoreNextTap) return;
+  ignoreNextTap = true;
+  setTimeout(() => (ignoreNextTap = false), 300);
+  startStopRecording();
+}
+
 async function startStopRecording() {
   if (!recording) {
     try {
@@ -76,13 +67,23 @@ async function startStopRecording() {
       audioChunks = [];
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunks, { type: "audio/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "myRecording.webm";
-        a.click();
+
+        // ✅ Upload to Firebase instead of downloading
+        const filename = `recordings/rec-${Date.now()}.webm`;
+        const storageRef = storage.ref(filename);
+        const uploadTask = storageRef.put(blob);
+
+        uploadTask.on(
+          "state_changed",
+          null,
+          (error) => console.error("Upload failed:", error),
+          async () => {
+            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+            console.log("✅ Uploaded:", downloadURL);
+          }
+        );
       };
 
       mediaRecorder.start();
@@ -110,5 +111,3 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - 70, height - 100);
 }
-
-
