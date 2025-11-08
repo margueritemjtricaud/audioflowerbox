@@ -9,29 +9,31 @@
   <!-- p5.js -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"></script>
-
+  <!-- Firebase (compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  
   <script>
-    // ✅ Replace with your Firebase config from console
+    // Replace these values with your actual Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyDKkwHunP6CAzFy-W5CwafF5Ap9Pcsdn_8",
+      apiKey: "YOUR_API_KEY",
       authDomain: "audio-flower-box.firebaseapp.com",
       projectId: "audio-flower-box",
-      storageBucket: "audio-flower-box.firebasestorage.app",
-      messagingSenderId: "843201545523",
-      appId: "1:843201545523:web:fbcfe5a0535b846e07aa46"
+      storageBucket: "audio-flower-box.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
-
+  
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
   </script>
+
 </head>
 
 <body>
   <script src="script.js"></script>
 </body>
 </html>
+
 
