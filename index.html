@@ -1,31 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Voice Flowers</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Recorder App</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-    <!-- 🔹 Firebase setup goes here -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"></script>
-    <script>
-      const firebaseConfig = {
-        apiKey: "YOUR_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const storage = firebase.storage();
-    </script>
-    <!-- 🔹 End Firebase setup -->
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"></script>
 
-    <!-- Your sketch -->
-    <script src="sketch.js"></script>
-  </head>
+  <script>
+    // ✅ Replace with your Firebase config from console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-  <body>
-  </body>
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+  </script>
+</head>
+
+<body>
+  <script src="script.js"></script>
+</body>
 </html>
