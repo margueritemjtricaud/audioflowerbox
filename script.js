@@ -67,24 +67,27 @@ async function startStopRecording() {
       audioChunks = [];
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(audioChunks, { type: "audio/webm" });
+     mediaRecorder.onstop = async () => {
+      const blob = new Blob(audioChunks, { type: "audio/webm" });
+    
+      // Create a unique filename
+      const filename = `recordings/rec-${Date.now()}.webm`;
+    
+      // Upload to Firebase Storage
+      const storageRef = storage.ref(filename);
+      const uploadTask = storageRef.put(blob);
+    
+      uploadTask.on(
+        "state_changed",
+        null,
+        (error) => console.error("Upload failed:", error),
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          console.log("✅ Uploaded:", downloadURL);
+        }
+      );
+    };
 
-        // ✅ Upload to Firebase instead of downloading
-        const filename = `recordings/rec-${Date.now()}.webm`;
-        const storageRef = storage.ref(filename);
-        const uploadTask = storageRef.put(blob);
-
-        uploadTask.on(
-          "state_changed",
-          null,
-          (error) => console.error("Upload failed:", error),
-          async () => {
-            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-            console.log("✅ Uploaded:", downloadURL);
-          }
-        );
-      };
 
       mediaRecorder.start();
       recording = true;
@@ -111,3 +114,4 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - 70, height - 100);
 }
+
