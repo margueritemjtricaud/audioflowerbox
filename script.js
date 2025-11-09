@@ -6,6 +6,7 @@ let micImg, bgImg, flowerImg;
 let micScale = 1;
 let flowers = [];
 let recordButton;
+let buttonSize = 100; // <— control this smoothly
 
 // Prevent double tap on iPad
 let ignoreNextTap = false;
@@ -22,13 +23,11 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
-  // Create PNG button
   recordButton = createImg("assets/record.png", "record button");
-  recordButton.size(10, 10);
-  recordButton.position(width / 2 - 50, height - 350);
+  recordButton.size(buttonSize, buttonSize);
+  recordButton.position(width / 2 - buttonSize / 2, height - 150);
   recordButton.style("cursor", "pointer");
 
-  // Handle clicks/taps
   recordButton.mousePressed(handleRecord);
   recordButton.touchEnded(handleRecord);
 }
@@ -38,26 +37,21 @@ function draw() {
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-  // Draw flowers
   for (let f of flowers) {
     if (flowerImg) image(flowerImg, f.x, f.y, f.size, f.size);
-    else {
-      fill(0, 255, 0);
-      ellipse(f.x, f.y, f.size);
-    }
+    else ellipse(f.x, f.y, f.size);
   }
 
-  // Animate mic
   micScale = recording ? lerp(micScale, 0.5, 0.01) : lerp(micScale, 0.3, 0.01);
   if (micImg)
-    image(micImg, width /4, height / 2 -100, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, width / 4, height / 2 - 100, micImg.width * micScale, micImg.height * micScale);
 
-  // Animate record button scale
+  // Animate button smoothly
   let targetSize = recording ? 120 : 100;
-  recordButton.size(lerp(recordButton.width, targetSize, 0.2), lerp(recordButton.height, targetSize, 0.2));
-  recordButton.position(width / 2 - recordButton.width / 2, height - 150);
+  buttonSize = lerp(buttonSize, targetSize, 0.2);
+  recordButton.size(buttonSize, buttonSize);
+  recordButton.position(width / 2 - buttonSize / 2, height - 150);
 
-  // Display text
   fill(255);
   textSize(24);
   text(recording ? "Recording..." : "Tap button to record", width / 2, height / 2);
@@ -114,8 +108,5 @@ function plantFlower() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  recordButton.position(width / 2 - recordButton.width / 2, height - 150);
+  recordButton.position(width / 2 - buttonSize / 2, height - 150);
 }
-
-
-
