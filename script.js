@@ -42,11 +42,6 @@ function draw() {
   if (micImg)
     image(micImg, width / 4, height/4, micImg.width * micScale, micImg.height * micScale);
 
-  // Status text in center
-  fill(255);
-  textSize(24);
-  text(recording ? "Recording..." : "Tap mic to record", width / 2, height / 2);
-
   // Upload feedback at bottom right
   if (showUploadText) {
     fill(253, 185, 146); // beige
@@ -142,5 +137,6 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
