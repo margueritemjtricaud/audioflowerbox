@@ -13,8 +13,8 @@ let uploadTextTimer = 0;
 // Prevent double tap on iPad
 let ignoreNextTap = false;
 
-// Define polygon area for flowers
-let polygon = [
+// Original polygon in 1920x1080 coordinates
+let originalPolygon = [
   { x: 570, y: 570 },
   { x: 1400, y: 570 },
   { x: 1740, y: 970 },
@@ -37,10 +37,10 @@ function setup() {
 function draw() {
   background(30);
 
-
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-    // Draw polygon area
+  // Draw polygon area (scaled to current window)
+  let polygon = getScaledPolygon();
   fill(0, 0, 255, 50); // semi-transparent blue
   stroke(0, 0, 255);
   strokeWeight(2);
@@ -49,7 +49,6 @@ function draw() {
     vertex(p.x, p.y);
   }
   endShape(CLOSE);
-
 
   // Draw flowers
   for (let f of flowers) {
@@ -147,6 +146,7 @@ async function startStopRecording() {
 
 // Plant flower inside polygon
 function plantFlower() {
+  let polygon = getScaledPolygon(); // scale to current window
   let pos = randomPointInPolygon(polygon);
   let fixedSize = 50;
   flowers.push({ x: pos.x, y: pos.y, size: fixedSize });
@@ -180,7 +180,13 @@ function pointInPolygon(px, py, poly) {
   return inside;
 }
 
+// Scale polygon coordinates to current canvas size
+function getScaledPolygon() {
+  const scaleX = width / 1920;
+  const scaleY = height / 1080;
+  return originalPolygon.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
+}
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
