@@ -48,9 +48,9 @@ function draw() {
   }
 
   // Animate mic
-  micScale = recording ? lerp(micScale, 1.5, 0.1) : lerp(micScale, 1, 0.1);
+  micScale = recording ? lerp(micScale, 0.5 0.01) : lerp(micScale, 0.3, 0.01);
   if (micImg)
-    image(micImg, width / 2, height / 2 + 200, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, width /4, height / 2 -100, micImg.width * micScale, micImg.height * micScale);
 
   // Animate record button scale
   let targetSize = recording ? 120 : 100;
