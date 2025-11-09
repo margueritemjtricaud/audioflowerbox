@@ -3,10 +3,8 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 1;
+let micScale = 0.3;
 let flowers = [];
-let recordButton;
-let buttonSize = 100; // <— control this smoothly
 
 // Prevent double tap on iPad
 let ignoreNextTap = false;
@@ -22,14 +20,6 @@ function setup() {
   textAlign(CENTER, CENTER);
   rectMode(CENTER);
   imageMode(CENTER);
-
-  recordButton = createImg("assets/mic.png", "record button");
-  recordButton.size(buttonSize, buttonSize);
-  recordButton.position(width / 2 - buttonSize / 2, height - 150);
-  recordButton.style("cursor", "pointer");
-
-  recordButton.mousePressed(handleRecord);
-  recordButton.touchEnded(handleRecord);
 }
 
 function draw() {
@@ -42,26 +32,46 @@ function draw() {
     else ellipse(f.x, f.y, f.size);
   }
 
-  micScale = recording ? lerp(micScale, 0.5, 0.01) : lerp(micScale, 0.3, 0.01);
-  if (micImg)
-    image(micImg, width / 4, height / 2 - 100, micImg.width * micScale, micImg.height * micScale);
+  // Animate mic size
+  micScale = recording ? lerp(micScale, 0.5, 0.05) : lerp(micScale, 0.3, 0.05);
 
-  // Animate button smoothly
-  let targetSize = recording ? 120 : 100;
-  buttonSize = lerp(buttonSize, targetSize, 0.2);
-  recordButton.size(buttonSize, buttonSize);
-  recordButton.position(width / 2 - buttonSize / 2, height - 150);
+  if (micImg)
+    image(micImg, width / 2, height - 150, micImg.width * micScale, micImg.height * micScale);
 
   fill(255);
   textSize(24);
-  text(recording ? "Recording..." : "Tap button to record", width / 2, height / 2);
+  text(recording ? "Recording..." : "Tap mic to record", width / 2, height / 2);
 }
 
-function handleRecord() {
+// Handle mouse clicks
+function mousePressed() {
+  handleMicPress(mouseX, mouseY);
+}
+
+// Handle touches
+function touchStarted() {
+  handleMicPress(touchX, touchY);
+  return false; // prevent default mobile behavior
+}
+
+function handleMicPress(x, y) {
   if (ignoreNextTap) return;
   ignoreNextTap = true;
   setTimeout(() => (ignoreNextTap = false), 300);
-  startStopRecording();
+
+  let micX = width / 2;
+  let micY = height - 150;
+  let micW = micImg.width * micScale;
+  let micH = micImg.height * micScale;
+
+  if (
+    x > micX - micW / 2 &&
+    x < micX + micW / 2 &&
+    y > micY - micH / 2 &&
+    y < micY + micH / 2
+  ) {
+    startStopRecording();
+  }
 }
 
 async function startStopRecording() {
@@ -75,16 +85,19 @@ async function startStopRecording() {
       mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunks, { type: "audio/webm" });
         const filename = `recordings/rec-${Date.now()}.webm`;
-        const storageRef = storage.ref(filename);
 
-        try {
-          await storageRef.put(blob);
-          const downloadURL = await storageRef.getDownloadURL();
-          console.log("✅ Uploaded:", downloadURL);
-          alert("Recording uploaded!");
-        } catch (err) {
-          console.error("Upload failed:", err);
-        }
+        // If using Firebase storage, uncomment below
+        // const storageRef = storage.ref(filename);
+        // try {
+        //   await storageRef.put(blob);
+        //   const downloadURL = await storageRef.getDownloadURL();
+        //   console.log("✅ Uploaded:", downloadURL);
+        //   alert("Recording uploaded!");
+        // } catch (err) {
+        //   console.error("Upload failed:", err);
+        // }
+
+        console.log("Recording complete:", filename);
       };
 
       mediaRecorder.start();
@@ -108,6 +121,4 @@ function plantFlower() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  recordButton.position(width / 2 - buttonSize / 2, height - 150);
 }
-
