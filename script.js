@@ -49,7 +49,7 @@ function draw() {
 
   // Upload feedback at bottom right
   if (showUploadText) {
-    fill(0, 255, 0); // green
+    fill(253, 185, 146); // beige
     textSize(18);
     textAlign(RIGHT, BOTTOM);
     text("Uploaded!", width - 20, height - 20);
@@ -142,3 +142,4 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
