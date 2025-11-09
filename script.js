@@ -40,7 +40,7 @@ function draw() {
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
   // Draw polygon area (scaled to current window)
-  let polygon = getScaledPolygon();
+  /*let polygon = getScaledPolygon();
   fill(0, 0, 255, 50); // semi-transparent blue
   stroke(0, 0, 255);
   strokeWeight(2);
@@ -48,7 +48,7 @@ function draw() {
   for (let p of polygon) {
     vertex(p.x, p.y);
   }
-  endShape(CLOSE);
+  endShape(CLOSE);*/
 
   // Draw flowers
   for (let f of flowers) {
@@ -57,7 +57,7 @@ function draw() {
   }
 
   // Animate mic size (small pulse while recording)
-  micScale = recording ? lerp(micScale, 0.25, 0.05) : lerp(micScale, 0.2, 0.05);
+  micScale = recording ? lerp(micScale, 0.2, 0.05) : lerp(micScale, 0.15, 0.05);
 
   if (micImg)
     image(micImg, 100, 100, micImg.width * micScale, micImg.height * micScale); // top-left
@@ -89,8 +89,8 @@ function handleMicPress(x, y) {
   ignoreNextTap = true;
   setTimeout(() => (ignoreNextTap = false), 300);
 
-  let micX = 50; // top-left
-  let micY = 50;
+  let micX = 100; // top-left
+  let micY = 100;
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
 
@@ -190,3 +190,4 @@ function getScaledPolygon() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
