@@ -64,7 +64,7 @@ function draw() {
 
   // Upload feedback at bottom right
   if (showUploadText) {
-    fill(0, 255, 0); // green
+    fill(282, 189, 144); // green
     textSize(18);
     textAlign(RIGHT, BOTTOM);
     text("Uploaded!", width - 20, height - 20);
@@ -190,4 +190,5 @@ function getScaledPolygon() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
