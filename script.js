@@ -25,7 +25,7 @@ function setup() {
   // Create PNG button
   recordButton = createImg("assets/record.png", "record button");
   recordButton.size(10, 10);
-  recordButton.position(width / 2 - 50, height - 150);
+  recordButton.position(width / 2 - 50, height - 350);
   recordButton.style("cursor", "pointer");
 
   // Handle clicks/taps
@@ -116,4 +116,5 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - recordButton.width / 2, height - 150);
 }
+
 
