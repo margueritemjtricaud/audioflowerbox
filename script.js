@@ -1,4 +1,4 @@
-: let recording = false;
+let recording = false;
 let audioChunks = [];
 let mediaRecorder;
 
@@ -140,6 +140,7 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
