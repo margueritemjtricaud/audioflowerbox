@@ -22,11 +22,12 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
+  // Create PNG button
   recordButton = createImg("assets/record.png", "record button");
-  recordButton.size(50, 50); // adjust as needed
-  recordButton.position(width / 2 - 50, height - 20); // center it
-  recordButton.style("cursor", "pointer"); // show hand cursor
-  
+  recordButton.size(100, 100);
+  recordButton.position(width / 2 - 50, height - 150);
+  recordButton.style("cursor", "pointer");
+
   // Handle clicks/taps
   recordButton.mousePressed(handleRecord);
   recordButton.touchEnded(handleRecord);
@@ -37,6 +38,7 @@ function draw() {
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
+  // Draw flowers
   for (let f of flowers) {
     if (flowerImg) image(flowerImg, f.x, f.y, f.size, f.size);
     else {
@@ -45,10 +47,17 @@ function draw() {
     }
   }
 
+  // Animate mic
   micScale = recording ? lerp(micScale, 1.5, 0.1) : lerp(micScale, 1, 0.1);
   if (micImg)
     image(micImg, width / 2, height / 2 + 200, micImg.width * micScale, micImg.height * micScale);
 
+  // Animate record button scale
+  let targetSize = recording ? 120 : 100;
+  recordButton.size(lerp(recordButton.width, targetSize, 0.2), lerp(recordButton.height, targetSize, 0.2));
+  recordButton.position(width / 2 - recordButton.width / 2, height - 150);
+
+  // Display text
   fill(255);
   textSize(24);
   text(recording ? "Recording..." : "Tap button to record", width / 2, height / 2);
@@ -69,30 +78,23 @@ async function startStopRecording() {
       audioChunks = [];
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-     mediaRecorder.onstop = async () => {
-      const blob = new Blob(audioChunks, { type: "audio/webm" });
-      const filename = `recordings/rec-${Date.now()}.webm`;
-      const storageRef = storage.ref(filename);
-    
-      try {
-        // Upload the blob
-        await storageRef.put(blob);
-    
-        // Get the public download URL
-        const downloadURL = await storageRef.getDownloadURL();
-        console.log("✅ Uploaded:", downloadURL);
-        alert("Recording uploaded! Check console for URL.");
-      } catch (err) {
-        console.error("Upload failed:", err);
-        alert("Upload failed. Check console.");
-      }
-    };
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
+        const filename = `recordings/rec-${Date.now()}.webm`;
+        const storageRef = storage.ref(filename);
 
-
+        try {
+          await storageRef.put(blob);
+          const downloadURL = await storageRef.getDownloadURL();
+          console.log("✅ Uploaded:", downloadURL);
+          alert("Recording uploaded!");
+        } catch (err) {
+          console.error("Upload failed:", err);
+        }
+      };
 
       mediaRecorder.start();
       recording = true;
-      recordButton.html("Stop Recording");
     } catch (err) {
       console.error("Microphone access denied or failed:", err);
     }
@@ -100,7 +102,6 @@ async function startStopRecording() {
     mediaRecorder.stop();
     recording = false;
     plantFlower();
-    recordButton.html("Start Recording");
   }
 }
 
@@ -113,10 +114,5 @@ function plantFlower() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  recordButton.position(width / 2 - 70, height - 100);
+  recordButton.position(width / 2 - recordButton.width / 2, height - 150);
 }
-
-
-
-
-
