@@ -5,8 +5,8 @@ let mediaRecorder;
 let micImg, bgImg, flowerImg;
 let micScale = 0.3;
 let flowers = [];
-let micX = width / 4;
-let micY = height / 4;
+let micX ;
+let micY ;
 
 // Upload feedback
 let showUploadText = false;
@@ -30,6 +30,8 @@ function setup() {
 
 function draw() {
   background(30);
+   micX = width / 4;
+   micY = height / 4;
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
@@ -138,6 +140,7 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
