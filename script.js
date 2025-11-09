@@ -6,6 +6,10 @@ let micImg, bgImg, flowerImg;
 let micScale = 0.3;
 let flowers = [];
 
+// Upload feedback
+let showUploadText = false;
+let uploadTextTimer = 0;
+
 // Prevent double tap on iPad
 let ignoreNextTap = false;
 
@@ -38,9 +42,22 @@ function draw() {
   if (micImg)
     image(micImg, width / 2, height - 150, micImg.width * micScale, micImg.height * micScale);
 
+  // Status text in center
   fill(255);
   textSize(24);
   text(recording ? "Recording..." : "Tap mic to record", width / 2, height / 2);
+
+  // Upload feedback at bottom right
+  if (showUploadText) {
+    fill(0, 255, 0); // green
+    textSize(18);
+    textAlign(RIGHT, BOTTOM);
+    text("Uploaded!", width - 20, height - 20);
+
+    // Timer countdown
+    uploadTextTimer--;
+    if (uploadTextTimer <= 0) showUploadText = false;
+  }
 }
 
 // Handle mouse clicks
@@ -51,7 +68,7 @@ function mousePressed() {
 // Handle touches
 function touchStarted() {
   handleMicPress(touchX, touchY);
-  return false; // prevent default mobile behavior
+  return false;
 }
 
 function handleMicPress(x, y) {
@@ -92,7 +109,11 @@ async function startStopRecording() {
           await storageRef.put(blob);
           const downloadURL = await storageRef.getDownloadURL();
           console.log("✅ Uploaded:", downloadURL);
-          alert("Recording uploaded!");
+
+          // Show small upload text at bottom right for 2 seconds
+          showUploadText = true;
+          uploadTextTimer = 120; // 60 fps * 2s
+
         } catch (err) {
           console.error("Upload failed:", err);
         }
