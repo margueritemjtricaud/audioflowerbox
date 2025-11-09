@@ -5,6 +5,8 @@ let mediaRecorder;
 let micImg, bgImg, flowerImg;
 let micScale = 0.3;
 let flowers = [];
+let micX = width / 4;
+let micY = height / 4;
 
 // Upload feedback
 let showUploadText = false;
@@ -40,7 +42,7 @@ function draw() {
   micScale = recording ? lerp(micScale, 0.5, 0.05) : lerp(micScale, 0.3, 0.05);
 
   if (micImg)
-    image(micImg, width / 4, height/4, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
 
   // Upload feedback at bottom right
   if (showUploadText) {
@@ -71,8 +73,7 @@ function handleMicPress(x, y) {
   ignoreNextTap = true;
   setTimeout(() => (ignoreNextTap = false), 300);
 
-  let micX = width / 2;
-  let micY = height - 150;
+
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
 
@@ -137,6 +138,7 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
