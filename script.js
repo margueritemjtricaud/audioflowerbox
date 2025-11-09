@@ -7,6 +7,7 @@ let micScale = 0.3;
 let flowers = [];
 let micX ;
 let micY ;
+let size =50;
 
 // Upload feedback
 let showUploadText = false;
@@ -133,12 +134,13 @@ async function startStopRecording() {
 function plantFlower() {
   let x = random(20, width-20);
   let y = random(200, height -20);
-  flowers.push({ x, y, size: 50 });
+  flowers.push({ x, y, size });
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
