@@ -82,11 +82,14 @@ async function startStopRecording() {
       audioChunks = [];
 
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
       mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunks, { type: "audio/webm" });
+
+        // Firebase Storage path (no local folder needed)
         const filename = `recordings/rec-${Date.now()}.webm`;
         const storageRef = storage.ref(filename);
-      
+
         try {
           await storageRef.put(blob);
           const downloadURL = await storageRef.getDownloadURL();
@@ -95,10 +98,9 @@ async function startStopRecording() {
         } catch (err) {
           console.error("Upload failed:", err);
         }
-      };
 
-
-        console.log("Recording complete:", filename);
+        // Plant flower after upload
+        plantFlower();
       };
 
       mediaRecorder.start();
@@ -109,7 +111,6 @@ async function startStopRecording() {
   } else {
     mediaRecorder.stop();
     recording = false;
-    plantFlower();
   }
 }
 
@@ -123,4 +124,3 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
