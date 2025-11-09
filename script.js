@@ -30,7 +30,7 @@ function setup() {
 
 function draw() {
   background(30);
-   micX = width / 6;
+   micX = width / 8;
    micY = height / 5;
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
@@ -41,7 +41,7 @@ function draw() {
   }
 
   // Animate mic size
-  micScale = recording ? lerp(micScale, 0.2, 0.03) : lerp(micScale, 0.1, 0.02);
+  micScale = recording ? lerp(micScale, 0.2, 0.05) : lerp(micScale, 0.1, 0.04);
 
   if (micImg)
     image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
@@ -139,6 +139,7 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
