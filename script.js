@@ -85,8 +85,6 @@ async function startStopRecording() {
 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunks, { type: "audio/webm" });
-
-        // Firebase Storage path (no local folder needed)
         const filename = `recordings/rec-${Date.now()}.webm`;
         const storageRef = storage.ref(filename);
 
@@ -99,7 +97,6 @@ async function startStopRecording() {
           console.error("Upload failed:", err);
         }
 
-        // Plant flower after upload
         plantFlower();
       };
 
