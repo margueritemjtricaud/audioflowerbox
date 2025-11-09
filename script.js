@@ -3,7 +3,7 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.15; // smaller size for top-left
+let micScale = 0.15; // base scale
 let flowers = [];
 
 // Upload feedback
@@ -20,6 +20,9 @@ let originalPolygon = [
   { x: 1740, y: 970 },
   { x: 160, y: 970 }
 ];
+
+// Mic hover target scale
+let micTargetScale = 0.15;
 
 function preload() {
   micImg = loadImage("assets/mic.png");
@@ -39,17 +42,43 @@ function draw() {
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-  // Draw flowers
+  // Draw flowers with hover/play scaling
   for (let f of flowers) {
-    if (flowerImg) image(flowerImg, f.x, f.y, f.size, f.size);
-    else ellipse(f.x, f.y, f.size);
+    // Hover detection
+    let d = dist(mouseX, mouseY, f.x, f.y);
+    f.hover = d < f.size / 2;
+
+    // Determine target size
+    let targetSize = f.size;
+    if (f.hover) targetSize *= 1.2;   // bigger on hover
+    if (f.playing) targetSize *= 1.5; // bigger when playing
+
+    // Smoothly animate current size
+    if (!f.currentSize) f.currentSize = f.size;
+    f.currentSize = lerp(f.currentSize, targetSize, 0.2);
+
+    // Draw flower
+    if (flowerImg) image(flowerImg, f.x, f.y, f.currentSize, f.currentSize);
+    else ellipse(f.x, f.y, f.currentSize);
   }
 
-  // Animate mic size (small pulse while recording)
-  micScale = recording ? lerp(micScale, 0.15, 0.05) : lerp(micScale, 0.1, 0.05);
+  // Animate mic scale (pulse and hover)
+  let micX = 150;
+  let micY = 150;
+  let micW = micImg.width * micScale;
+  let micH = micImg.height * micScale;
 
+  // Hover detection for mic
+  if (mouseX > micX - micW / 2 && mouseX < micX + micW / 2 &&
+      mouseY > micY - micH / 2 && mouseY < micY + micH / 2) {
+    micTargetScale = 0.18; // slightly bigger on hover
+  } else {
+    micTargetScale = recording ? 0.15 : 0.1; // normal or recording pulse
+  }
+
+  micScale = lerp(micScale, micTargetScale, 0.2);
   if (micImg)
-    image(micImg, 150, 150, micImg.width * micScale, micImg.height * micScale); // top-left
+    image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
 
   // Upload feedback at bottom right
   if (showUploadText) {
@@ -80,8 +109,8 @@ function handleMicPress(x, y) {
   ignoreNextTap = true;
   setTimeout(() => (ignoreNextTap = false), 300);
 
-  let micX = 100; // top-left
-  let micY = 100;
+  let micX = 150;
+  let micY = 150;
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
 
@@ -114,9 +143,9 @@ async function startStopRecording() {
           const downloadURL = await storageRef.getDownloadURL();
           console.log("✅ Uploaded:", downloadURL);
 
-          // Show small upload text at bottom right for ~2 seconds
+          // Show upload text
           showUploadText = true;
-          uploadTextTimer = 120; // 60 fps * 2s
+          uploadTextTimer = 120; // 2 seconds
 
           // Plant flower with audio
           plantFlower(downloadURL);
@@ -138,22 +167,30 @@ async function startStopRecording() {
 
 // Plant flower inside polygon, store audio URL
 function plantFlower(audioURL) {
-  let polygon = getScaledPolygon(); // scale to current window
+  let polygon = getScaledPolygon();
   let pos = randomPointInPolygon(polygon);
   let fixedSize = 50;
-  flowers.push({ x: pos.x, y: pos.y, size: fixedSize, audio: audioURL });
+  flowers.push({
+    x: pos.x,
+    y: pos.y,
+    size: fixedSize,
+    audio: audioURL,
+    hover: false,
+    playing: false,
+    currentSize: fixedSize
+  });
 }
 
 // Detect clicks on flowers and play audio
 function handleFlowerClick(x, y) {
   for (let f of flowers) {
     let d = dist(x, y, f.x, f.y);
-    if (d < f.size / 2) {
-      if (f.audio) {
-        let audio = new Audio(f.audio);
-        audio.play();
-      }
-      break; // play only the first flower clicked
+    if (d < f.size / 2 && f.audio) {
+      let audio = new Audio(f.audio);
+      f.playing = true;
+      audio.play();
+      audio.onended = () => f.playing = false;
+      break;
     }
   }
 }
