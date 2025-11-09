@@ -23,7 +23,7 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
-  recordButton = createImg("assets/record.png", "record button");
+  recordButton = createImg("assets/mic.png", "record button");
   recordButton.size(buttonSize, buttonSize);
   recordButton.position(width / 2 - buttonSize / 2, height - 150);
   recordButton.style("cursor", "pointer");
@@ -110,3 +110,4 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - buttonSize / 2, height - 150);
 }
+
