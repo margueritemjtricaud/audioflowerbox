@@ -3,7 +3,7 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.2; // smaller size for top-left
+let micScale = 0.15; // smaller size for top-left
 let flowers = [];
 
 // Upload feedback
@@ -57,10 +57,10 @@ function draw() {
   }
 
   // Animate mic size (small pulse while recording)
-  micScale = recording ? lerp(micScale, 0.2, 0.05) : lerp(micScale, 0.15, 0.05);
+  micScale = recording ? lerp(micScale, 0.15, 0.05) : lerp(micScale, 0.1, 0.05);
 
   if (micImg)
-    image(micImg, 100, 100, micImg.width * micScale, micImg.height * micScale); // top-left
+    image(micImg, 150, 150, micImg.width * micScale, micImg.height * micScale); // top-left
 
   // Upload feedback at bottom right
   if (showUploadText) {
@@ -190,5 +190,6 @@ function getScaledPolygon() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
