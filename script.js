@@ -23,8 +23,8 @@ function setup() {
   imageMode(CENTER);
 
   recordButton = createImg("assets/record.png", "record button");
-  recordButton.size(100, 100); // adjust as needed
-  recordButton.position(width / 2 - 50, height - 150); // center it
+  recordButton.size(50, 50); // adjust as needed
+  recordButton.position(width / 2 - 50, height - 20); // center it
   recordButton.style("cursor", "pointer"); // show hand cursor
   
   // Handle clicks/taps
@@ -115,6 +115,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - 70, height - 100);
 }
+
 
 
 
