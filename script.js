@@ -15,10 +15,10 @@ let ignoreNextTap = false;
 
 // Define polygon area for flowers
 let polygon = [
-  { x: 100, y: 100 },
-  { x: 400, y: 150 },
-  { x: 350, y: 400 },
-  { x: 150, y: 350 }
+  { x: 570, y: 570 },
+  { x: 1400, y: 570 },
+  { x: 1740, y: 970 },
+  { x: 160, y: 970 }
 ];
 
 function preload() {
@@ -37,7 +37,10 @@ function setup() {
 function draw() {
   background(30);
 
-  // Draw polygon area
+
+  if (bgImg) image(bgImg, width / 2, height / 2, width, height);
+
+    // Draw polygon area
   fill(0, 0, 255, 50); // semi-transparent blue
   stroke(0, 0, 255);
   strokeWeight(2);
@@ -47,7 +50,6 @@ function draw() {
   }
   endShape(CLOSE);
 
-  if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
   // Draw flowers
   for (let f of flowers) {
@@ -59,12 +61,7 @@ function draw() {
   micScale = recording ? lerp(micScale, 0.25, 0.05) : lerp(micScale, 0.2, 0.05);
 
   if (micImg)
-    image(micImg, 50, 50, micImg.width * micScale, micImg.height * micScale); // top-left
-
-  // Status text in center
-  fill(255);
-  textSize(24);
-  text(recording ? "Recording..." : "Tap mic to record", width / 2, height / 2);
+    image(micImg, 100, 100, micImg.width * micScale, micImg.height * micScale); // top-left
 
   // Upload feedback at bottom right
   if (showUploadText) {
@@ -186,3 +183,4 @@ function pointInPolygon(px, py, poly) {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
