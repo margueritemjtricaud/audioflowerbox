@@ -133,12 +133,13 @@ async function startStopRecording() {
 function plantFlower() {
   let x = random(20, width-20);
   let y = random(200, height -20);
-  flowers.push({ x, y, size });
+  flowers.push({ x, y, 50 });
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
