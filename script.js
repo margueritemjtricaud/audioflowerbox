@@ -22,10 +22,12 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
-  recordButton = createButton("Start Recording");
-  recordButton.position(width / 2 - 70, height - 100);
-  recordButton.style("font-size", "20px");
-
+  recordButton = createImg("assets/record.png", "record button");
+  recordButton.size(100, 100); // adjust as needed
+  recordButton.position(width / 2 - 50, height - 150); // center it
+  recordButton.style("cursor", "pointer"); // show hand cursor
+  
+  // Handle clicks/taps
   recordButton.mousePressed(handleRecord);
   recordButton.touchEnded(handleRecord);
 }
@@ -113,6 +115,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - 70, height - 100);
 }
+
 
 
 
