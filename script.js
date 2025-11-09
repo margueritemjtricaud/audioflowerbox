@@ -40,7 +40,7 @@ function draw() {
   micScale = recording ? lerp(micScale, 0.5, 0.05) : lerp(micScale, 0.3, 0.05);
 
   if (micImg)
-    image(micImg, width / 2, height - 150, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, width / 4, height/4, micImg.width * micScale, micImg.height * micScale);
 
   // Status text in center
   fill(255);
@@ -142,4 +142,5 @@ function plantFlower() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
