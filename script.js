@@ -48,7 +48,7 @@ function draw() {
   }
 
   // Animate mic
-  micScale = recording ? lerp(micScale, 0.5 0.01) : lerp(micScale, 0.3, 0.01);
+  micScale = recording ? lerp(micScale, 0.5, 0.01) : lerp(micScale, 0.3, 0.01);
   if (micImg)
     image(micImg, width /4, height / 2 -100, micImg.width * micScale, micImg.height * micScale);
 
@@ -116,5 +116,6 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recordButton.position(width / 2 - recordButton.width / 2, height - 150);
 }
+
 
 
