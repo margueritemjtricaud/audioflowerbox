@@ -3,7 +3,7 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.3;
+let micScale = 0.2; // smaller size for top-left
 let flowers = [];
 
 // Upload feedback
@@ -15,10 +15,10 @@ let ignoreNextTap = false;
 
 // Define polygon area for flowers
 let polygon = [
-  { x: 583, y: 582 },
-  { x: 1403, y: 582 },
-  { x: 1760, y: 970 },
-  { x: 160, y: 970 }
+  { x: 100, y: 100 },
+  { x: 400, y: 150 },
+  { x: 350, y: 400 },
+  { x: 150, y: 350 }
 ];
 
 function preload() {
@@ -37,6 +37,16 @@ function setup() {
 function draw() {
   background(30);
 
+  // Draw polygon area
+  fill(0, 0, 255, 50); // semi-transparent blue
+  stroke(0, 0, 255);
+  strokeWeight(2);
+  beginShape();
+  for (let p of polygon) {
+    vertex(p.x, p.y);
+  }
+  endShape(CLOSE);
+
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
   // Draw flowers
@@ -45,11 +55,11 @@ function draw() {
     else ellipse(f.x, f.y, f.size);
   }
 
-  // Animate mic size
-  micScale = recording ? lerp(micScale, 0.5, 0.05) : lerp(micScale, 0.3, 0.05);
+  // Animate mic size (small pulse while recording)
+  micScale = recording ? lerp(micScale, 0.25, 0.05) : lerp(micScale, 0.2, 0.05);
 
   if (micImg)
-    image(micImg, width / 2, height - 150, micImg.width * micScale, micImg.height * micScale);
+    image(micImg, 50, 50, micImg.width * micScale, micImg.height * micScale); // top-left
 
   // Status text in center
   fill(255);
@@ -83,8 +93,8 @@ function handleMicPress(x, y) {
   ignoreNextTap = true;
   setTimeout(() => (ignoreNextTap = false), 300);
 
-  let micX = width / 2;
-  let micY = height - 150;
+  let micX = 50; // top-left
+  let micY = 50;
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
 
