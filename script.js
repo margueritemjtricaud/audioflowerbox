@@ -31,7 +31,7 @@ function setup() {
 function draw() {
   background(30);
    micX = width / 5;
-   micY = height / 5;
+   micY = height / 6;
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
@@ -41,7 +41,7 @@ function draw() {
   }
 
   // Animate mic size
-  micScale = recording ? lerp(micScale, 0.3, 0.03) : lerp(micScale, 0.2, 0.03);
+  micScale = recording ? lerp(micScale, 0.2, 0.02) : lerp(micScale, 0.1, 0.01);
 
   if (micImg)
     image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
@@ -131,15 +131,15 @@ async function startStopRecording() {
 }
 
 function plantFlower() {
-  let size = random(50, 150);
-  let x = random(size / 2, width - size / 2);
-  let y = random(size / 2, height - size / 2);
+  let x = random(20, width-20);
+  let y = random(200, height -20);
   flowers.push({ x, y, size });
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
 
 
 
