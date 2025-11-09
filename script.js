@@ -3,7 +3,7 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.15; // base scale
+let micScale = 0.15; // base scale for mic
 let flowers = [];
 
 // Upload feedback
@@ -21,8 +21,12 @@ let originalPolygon = [
   { x: 160, y: 970 }
 ];
 
-// Mic hover target scale
-let micTargetScale = 0.15;
+// Mic animation
+let micBaseScale = 0.15;
+let micHoverScale = 0.17;  // slightly smaller hover effect
+let micPulseScale = 0.02;  // pulse amount while recording
+let micTargetScale = micBaseScale;
+let micPulseAngle = 0;
 
 function preload() {
   micImg = loadImage("assets/mic.png");
@@ -44,16 +48,16 @@ function draw() {
 
   // Draw flowers with hover/play scaling
   for (let f of flowers) {
-    // Hover detection
+    // Hover detection (smaller effect)
     let d = dist(mouseX, mouseY, f.x, f.y);
     f.hover = d < f.size / 2;
 
     // Determine target size
     let targetSize = f.size;
-    if (f.hover) targetSize *= 1.2;   // bigger on hover
+    if (f.hover) targetSize *= 1.1;   // smaller hover effect
     if (f.playing) targetSize *= 1.5; // bigger when playing
 
-    // Smoothly animate current size
+    // Smooth animation
     if (!f.currentSize) f.currentSize = f.size;
     f.currentSize = lerp(f.currentSize, targetSize, 0.2);
 
@@ -62,25 +66,31 @@ function draw() {
     else ellipse(f.x, f.y, f.currentSize);
   }
 
-  // Animate mic scale (pulse and hover)
+  // Mic button animation
   let micX = 150;
   let micY = 150;
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
 
-  // Hover detection for mic
-  if (mouseX > micX - micW / 2 && mouseX < micX + micW / 2 &&
-      mouseY > micY - micH / 2 && mouseY < micY + micH / 2) {
-    micTargetScale = 0.18; // slightly bigger on hover
+  if (!recording) {
+    // Hover effect when not recording
+    if (mouseX > micX - micW / 2 && mouseX < micX + micW / 2 &&
+        mouseY > micY - micH / 2 && mouseY < micY + micH / 2) {
+      micTargetScale = micHoverScale;
+    } else {
+      micTargetScale = micBaseScale;
+    }
   } else {
-    micTargetScale = recording ? 0.15 : 0.1; // normal or recording pulse
+    // Pulse while recording, ignore hover
+    micTargetScale = micBaseScale + sin(micPulseAngle) * micPulseScale;
+    micPulseAngle += 0.1;
   }
 
+  // Smooth mic animation
   micScale = lerp(micScale, micTargetScale, 0.2);
-  if (micImg)
-    image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
+  if (micImg) image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
 
-  // Upload feedback at bottom right
+  // Upload feedback
   if (showUploadText) {
     fill(282, 189, 144); // your color
     textSize(18);
@@ -143,7 +153,7 @@ async function startStopRecording() {
           const downloadURL = await storageRef.getDownloadURL();
           console.log("✅ Uploaded:", downloadURL);
 
-          // Show upload text
+          // Show small upload text
           showUploadText = true;
           uploadTextTimer = 120; // 2 seconds
 
