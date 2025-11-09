@@ -39,17 +39,6 @@ function draw() {
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-  // Draw polygon area (scaled to current window)
-  /*let polygon = getScaledPolygon();
-  fill(0, 0, 255, 50); // semi-transparent blue
-  stroke(0, 0, 255);
-  strokeWeight(2);
-  beginShape();
-  for (let p of polygon) {
-    vertex(p.x, p.y);
-  }
-  endShape(CLOSE);*/
-
   // Draw flowers
   for (let f of flowers) {
     if (flowerImg) image(flowerImg, f.x, f.y, f.size, f.size);
@@ -64,7 +53,7 @@ function draw() {
 
   // Upload feedback at bottom right
   if (showUploadText) {
-    fill(282, 189, 144); // green
+    fill(282, 189, 144); // your color
     textSize(18);
     textAlign(RIGHT, BOTTOM);
     text("Uploaded!", width - 20, height - 20);
@@ -77,10 +66,12 @@ function draw() {
 // Mouse and touch handling
 function mousePressed() {
   handleMicPress(mouseX, mouseY);
+  handleFlowerClick(mouseX, mouseY);
 }
 
 function touchStarted() {
   handleMicPress(touchX, touchY);
+  handleFlowerClick(touchX, touchY);
   return false;
 }
 
@@ -126,11 +117,12 @@ async function startStopRecording() {
           // Show small upload text at bottom right for ~2 seconds
           showUploadText = true;
           uploadTextTimer = 120; // 60 fps * 2s
+
+          // Plant flower with audio
+          plantFlower(downloadURL);
         } catch (err) {
           console.error("Upload failed:", err);
         }
-
-        plantFlower();
       };
 
       mediaRecorder.start();
@@ -144,12 +136,26 @@ async function startStopRecording() {
   }
 }
 
-// Plant flower inside polygon
-function plantFlower() {
+// Plant flower inside polygon, store audio URL
+function plantFlower(audioURL) {
   let polygon = getScaledPolygon(); // scale to current window
   let pos = randomPointInPolygon(polygon);
   let fixedSize = 50;
-  flowers.push({ x: pos.x, y: pos.y, size: fixedSize });
+  flowers.push({ x: pos.x, y: pos.y, size: fixedSize, audio: audioURL });
+}
+
+// Detect clicks on flowers and play audio
+function handleFlowerClick(x, y) {
+  for (let f of flowers) {
+    let d = dist(x, y, f.x, f.y);
+    if (d < f.size / 2) {
+      if (f.audio) {
+        let audio = new Audio(f.audio);
+        audio.play();
+      }
+      break; // play only the first flower clicked
+    }
+  }
 }
 
 // Random point inside polygon using bounding box + ray-casting
@@ -190,6 +196,3 @@ function getScaledPolygon() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
-
-
