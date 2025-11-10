@@ -3,7 +3,7 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.15; // Base scale
+let micScale = 0.15; // Base scale for mic button
 let flowers = [];
 let hoveredFlower = null;
 let playingFlower = null;
@@ -39,7 +39,7 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
 
-  // 🌸 Load existing flowers from Firestore
+  // Load existing flowers from Firestore
   db.collection("flowers")
     .orderBy("createdAt")
     .get()
@@ -77,17 +77,8 @@ function draw() {
   }
 
   // Animate mic (pulse when recording)
-  let pulse = recording ? 0.03 * sin(frameCount * 0.05) : 0; // smoother, slower pulse
-  let targetScale;
-
-  if (recording) {
-    targetScale = 0.15 + pulse; // pulsing during recording
-  } else if (hoveringMic()) {
-    targetScale = 0.12; // gentle hover grow
-  } else {
-    targetScale = 0.1;
-  }
-
+  let pulse = recording ? 0.02 * sin(frameCount * 0.1) : 0;
+  let targetScale = recording ? 0.15 + pulse : (hoveringMic() ? 0.12 : 0.1);
   micScale = lerp(micScale, targetScale, 0.1);
 
   // Draw mic button (top-left)
@@ -107,7 +98,12 @@ function draw() {
 
 // --- EVENT HANDLERS ---
 function mousePressed() {
-  if (hoveredFlower && !recording) {
+  if (recording) {
+    stopRecording();
+    return;
+  }
+
+  if (hoveredFlower) {
     playFlower(hoveredFlower);
   } else if (hoveringMic()) {
     startStopRecording();
@@ -135,6 +131,13 @@ function hoveringMic() {
 
 async function startStopRecording() {
   if (!recording) {
+    // Stop any playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+      playingFlower = null;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
@@ -143,36 +146,7 @@ async function startStopRecording() {
       mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(audioChunks, { type: "audio/webm" });
-        const filename = `recordings/rec-${Date.now()}.webm`;
-        const storageRef = storage.ref(filename);
-
-        try {
-          await storageRef.put(blob);
-          const downloadURL = await storageRef.getDownloadURL();
-          console.log("✅ Uploaded:", downloadURL);
-
-          // 🌼 Create and store flower in Firestore
-          const polygon = getScaledPolygon();
-          const pos = randomPointInPolygon(polygon);
-          const flowerData = {
-            x: pos.x,
-            y: pos.y,
-            size: 50,
-            url: downloadURL,
-            createdAt: Date.now(),
-          };
-
-          // Save to Firestore and add to screen
-          await db.collection("flowers").add(flowerData);
-          flowers.push(flowerData);
-
-          // Show upload feedback
-          showUploadText = true;
-          uploadTextTimer = 120;
-        } catch (err) {
-          console.error("Upload failed:", err);
-        }
+        await uploadRecording();
       };
 
       mediaRecorder.start();
@@ -182,14 +156,54 @@ async function startStopRecording() {
       console.error("Microphone access denied or failed:", err);
     }
   } else {
+    stopRecording();
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && recording) {
     mediaRecorder.stop();
     recording = false;
     console.log("🛑 Recording stopped");
   }
 }
 
+async function uploadRecording() {
+  const blob = new Blob(audioChunks, { type: "audio/webm" });
+  // Avoid %2F by not using a folder in filename
+  const filename = `rec-${Date.now()}.webm`;
+  const storageRef = storage.ref(filename);
+
+  try {
+    await storageRef.put(blob);
+    const downloadURL = await storageRef.getDownloadURL();
+    console.log("✅ Uploaded:", downloadURL);
+
+    // 🌼 Create and store flower in Firestore
+    const polygon = getScaledPolygon();
+    const pos = randomPointInPolygon(polygon);
+    const flowerData = {
+      x: pos.x,
+      y: pos.y,
+      size: 50,
+      url: downloadURL,
+      createdAt: Date.now(),
+    };
+
+    await db.collection("flowers").add(flowerData);
+    flowers.push(flowerData);
+
+    // Show upload feedback
+    showUploadText = true;
+    uploadTextTimer = 120;
+  } catch (err) {
+    console.error("Upload failed:", err);
+  }
+}
+
 // --- FLOWER PLAYBACK ---
 function playFlower(flower) {
+  // Stop current audio if any
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
