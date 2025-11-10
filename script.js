@@ -3,8 +3,10 @@ let audioChunks = [];
 let mediaRecorder;
 
 let micImg, bgImg, flowerImg;
-let micScale = 0.15; // base scale for mic
+let micScale = 0.15; // Base scale
 let flowers = [];
+let hoveredFlower = null;
+let playingFlower = null;
 
 // Upload feedback
 let showUploadText = false;
@@ -21,13 +23,10 @@ let originalPolygon = [
   { x: 160, y: 970 }
 ];
 
-// Mic animation
-let micBaseScale = 0.15;
-let micHoverScale = 0.17;  // slightly smaller hover effect
-let micPulseScale = 0.02;  // pulse amount while recording
-let micTargetScale = micBaseScale;
-let micPulseAngle = 0;
+// --- AUDIO PLAYER ---
+let currentAudio = null;
 
+// --- IMAGES ---
 function preload() {
   micImg = loadImage("assets/mic.png");
   bgImg = loadImage("assets/background.png");
@@ -39,6 +38,18 @@ function setup() {
   textAlign(CENTER, CENTER);
   rectMode(CENTER);
   imageMode(CENTER);
+
+  // 🌸 Load existing flowers from Firestore
+  db.collection("flowers")
+    .orderBy("createdAt")
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        flowers.push(doc.data());
+      });
+      console.log(`🌸 Loaded ${flowers.length} flowers`);
+    })
+    .catch(err => console.error("Failed to load flowers:", err));
 }
 
 function draw() {
@@ -46,92 +57,72 @@ function draw() {
 
   if (bgImg) image(bgImg, width / 2, height / 2, width, height);
 
-  // Draw flowers with hover/play scaling
+  // Draw flowers with subtle animation
+  hoveredFlower = null;
   for (let f of flowers) {
-    // Hover detection (smaller effect)
     let d = dist(mouseX, mouseY, f.x, f.y);
-    f.hover = d < f.size / 2;
+    let hover = d < f.size / 2;
 
-    // Determine target size
+    if (hover && !recording) hoveredFlower = f;
+
     let targetSize = f.size;
-    if (f.hover) targetSize *= 1.1;   // smaller hover effect
-    if (f.playing) targetSize *= 1.5; // bigger when playing
+    if (f === playingFlower) targetSize *= 1.4; // bigger while playing
+    else if (hover && !recording) targetSize *= 1.15; // gentle hover grow
 
-    // Smooth animation
-    if (!f.currentSize) f.currentSize = f.size;
-    f.currentSize = lerp(f.currentSize, targetSize, 0.2);
+    f.currentSize = lerp(f.currentSize || f.size, targetSize, 0.1);
 
-    // Draw flower
-    if (flowerImg) image(flowerImg, f.x, f.y, f.currentSize, f.currentSize);
+    if (flowerImg)
+      image(flowerImg, f.x, f.y, f.currentSize, f.currentSize);
     else ellipse(f.x, f.y, f.currentSize);
   }
 
-  // Mic button animation
-  let micX = 150;
-  let micY = 150;
-  let micW = micImg.width * micScale;
-  let micH = micImg.height * micScale;
+  // Animate mic (pulse when recording)
+  let pulse = recording ? 0.03 * sin(frameCount * 0.2) : 0;
+  let targetScale = recording ? 0.15 + pulse : (hoveringMic() ? 0.12 : 0.1);
+  micScale = lerp(micScale, targetScale, 0.1);
 
-  if (!recording) {
-    // Hover effect when not recording
-    if (mouseX > micX - micW / 2 && mouseX < micX + micW / 2 &&
-        mouseY > micY - micH / 2 && mouseY < micY + micH / 2) {
-      micTargetScale = micHoverScale;
-    } else {
-      micTargetScale = micBaseScale;
-    }
-  } else {
-    // Pulse while recording, ignore hover
-    micTargetScale = micBaseScale + sin(micPulseAngle) * micPulseScale;
-    micPulseAngle += 0.1;
-  }
+  // Draw mic button (top-left)
+  if (micImg)
+    image(micImg, 150, 150, micImg.width * micScale, micImg.height * micScale);
 
-  // Smooth mic animation
-  micScale = lerp(micScale, micTargetScale, 0.2);
-  if (micImg) image(micImg, micX, micY, micImg.width * micScale, micImg.height * micScale);
-
-  // Upload feedback
+  // Upload feedback at bottom right
   if (showUploadText) {
-    fill(282, 189, 144); // your color
+    fill(282, 189, 144);
     textSize(18);
     textAlign(RIGHT, BOTTOM);
     text("Uploaded!", width - 20, height - 20);
-
     uploadTextTimer--;
     if (uploadTextTimer <= 0) showUploadText = false;
   }
 }
 
-// Mouse and touch handling
+// --- EVENT HANDLERS ---
 function mousePressed() {
-  handleMicPress(mouseX, mouseY);
-  handleFlowerClick(mouseX, mouseY);
+  if (recording) return;
+  if (hoveredFlower) {
+    playFlower(hoveredFlower);
+  } else if (hoveringMic()) {
+    startStopRecording();
+  }
 }
 
 function touchStarted() {
-  handleMicPress(touchX, touchY);
-  handleFlowerClick(touchX, touchY);
+  mousePressed();
   return false;
 }
 
-function handleMicPress(x, y) {
-  if (ignoreNextTap) return;
-  ignoreNextTap = true;
-  setTimeout(() => (ignoreNextTap = false), 300);
-
+// --- MIC INTERACTION ---
+function hoveringMic() {
   let micX = 150;
   let micY = 150;
   let micW = micImg.width * micScale;
   let micH = micImg.height * micScale;
-
-  if (
-    x > micX - micW / 2 &&
-    x < micX + micW / 2 &&
-    y > micY - micH / 2 &&
-    y < micY + micH / 2
-  ) {
-    startStopRecording();
-  }
+  return (
+    mouseX > micX - micW / 2 &&
+    mouseX < micX + micW / 2 &&
+    mouseY > micY - micH / 2 &&
+    mouseY < micY + micH / 2
+  );
 }
 
 async function startStopRecording() {
@@ -153,12 +144,24 @@ async function startStopRecording() {
           const downloadURL = await storageRef.getDownloadURL();
           console.log("✅ Uploaded:", downloadURL);
 
-          // Show small upload text
-          showUploadText = true;
-          uploadTextTimer = 120; // 2 seconds
+          // 🌼 Create and store flower in Firestore
+          const polygon = getScaledPolygon();
+          const pos = randomPointInPolygon(polygon);
+          const flowerData = {
+            x: pos.x,
+            y: pos.y,
+            size: 50,
+            url: downloadURL,
+            createdAt: Date.now(),
+          };
 
-          // Plant flower with audio
-          plantFlower(downloadURL);
+          // Save to Firestore and add to screen
+          await db.collection("flowers").add(flowerData);
+          flowers.push(flowerData);
+
+          // Show upload feedback
+          showUploadText = true;
+          uploadTextTimer = 120;
         } catch (err) {
           console.error("Upload failed:", err);
         }
@@ -175,37 +178,24 @@ async function startStopRecording() {
   }
 }
 
-// Plant flower inside polygon, store audio URL
-function plantFlower(audioURL) {
-  let polygon = getScaledPolygon();
-  let pos = randomPointInPolygon(polygon);
-  let fixedSize = 50;
-  flowers.push({
-    x: pos.x,
-    y: pos.y,
-    size: fixedSize,
-    audio: audioURL,
-    hover: false,
-    playing: false,
-    currentSize: fixedSize
-  });
-}
-
-// Detect clicks on flowers and play audio
-function handleFlowerClick(x, y) {
-  for (let f of flowers) {
-    let d = dist(x, y, f.x, f.y);
-    if (d < f.size / 2 && f.audio) {
-      let audio = new Audio(f.audio);
-      f.playing = true;
-      audio.play();
-      audio.onended = () => f.playing = false;
-      break;
-    }
+// --- FLOWER PLAYBACK ---
+function playFlower(flower) {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+    playingFlower = null;
   }
+
+  currentAudio = new Audio(flower.url);
+  playingFlower = flower;
+  currentAudio.play();
+
+  currentAudio.onended = () => {
+    playingFlower = null;
+  };
 }
 
-// Random point inside polygon using bounding box + ray-casting
+// --- HELPERS ---
 function randomPointInPolygon(poly) {
   let minX = Math.min(...poly.map(p => p.x));
   let maxX = Math.max(...poly.map(p => p.x));
@@ -220,7 +210,6 @@ function randomPointInPolygon(poly) {
   return { x, y };
 }
 
-// Ray-casting algorithm to test point inside polygon
 function pointInPolygon(px, py, poly) {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -233,7 +222,6 @@ function pointInPolygon(px, py, poly) {
   return inside;
 }
 
-// Scale polygon coordinates to current canvas size
 function getScaledPolygon() {
   const scaleX = width / 1920;
   const scaleY = height / 1080;
