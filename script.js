@@ -77,8 +77,17 @@ function draw() {
   }
 
   // Animate mic (pulse when recording)
-  let pulse = recording ? 0.03 * sin(frameCount * 0.2) : 0;
-  let targetScale = recording ? 0.15 + pulse : (hoveringMic() ? 0.12 : 0.1);
+  let pulse = recording ? 0.03 * sin(frameCount * 0.05) : 0; // smoother, slower pulse
+  let targetScale;
+
+  if (recording) {
+    targetScale = 0.15 + pulse; // pulsing during recording
+  } else if (hoveringMic()) {
+    targetScale = 0.12; // gentle hover grow
+  } else {
+    targetScale = 0.1;
+  }
+
   micScale = lerp(micScale, targetScale, 0.1);
 
   // Draw mic button (top-left)
@@ -98,8 +107,7 @@ function draw() {
 
 // --- EVENT HANDLERS ---
 function mousePressed() {
-  if (recording) return;
-  if (hoveredFlower) {
+  if (hoveredFlower && !recording) {
     playFlower(hoveredFlower);
   } else if (hoveringMic()) {
     startStopRecording();
@@ -169,12 +177,14 @@ async function startStopRecording() {
 
       mediaRecorder.start();
       recording = true;
+      console.log("🎙️ Recording started...");
     } catch (err) {
       console.error("Microphone access denied or failed:", err);
     }
   } else {
     mediaRecorder.stop();
     recording = false;
+    console.log("🛑 Recording stopped");
   }
 }
 
