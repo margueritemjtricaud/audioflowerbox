@@ -12,6 +12,7 @@
   <!-- Firebase (compat version) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   
   <script>
     // Replace these values with your actual Firebase config
@@ -27,7 +28,10 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    const db = firebase.firestore();
+
+    const storage = firebase.storage();
+
 
   </script>
 
@@ -37,6 +41,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
